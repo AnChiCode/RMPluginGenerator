@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- monaco -->
+  <link rel="stylesheet" data-name="vs/editor/editor.main" href="./lib/monaco-editor/min/vs/editor/editor.main.css" />
+  <script>
+    var require = {
+      paths: { vs: "./lib/monaco-editor/min/vs" },
+    };
+  </script>
+  <script src="./lib/monaco-editor/min/vs/loader.js"></script>
+  <script src="./lib/monaco-editor/min/vs/editor/editor.main.js"></script>
+  <!-- css -->
+  <style>
+    body {
+      margin: 0;
+      padding-top: 8px;
+      font-family: monospace;
+      font-weight: bolder;
+      font-size: 16px;
+      background-color: #0003;
+    }
+
+    button {
+      transition: all 0.15s ease-in;
+
+      border: none;
+      background-color: #0001;
+
+      font-family: monospace;
+      font-size: 1em;
+      font-weight: bold;
+    }
+
+    .root_fold {
+      height: 25px;
+    }
+
+    .fold {
+      height: 21px;
+      overflow: hidden;
+    }
+
+    #build_result_button {
+      position: fixed;
+      left: calc(75% + 5px);
+      top: 8px;
+    }
+
+    button:hover,
+    .root_title:hover,
+    #root_param .param_title:hover,
+    #root_param .param.block .param_input_type_isarray:hover,
+    #root_command .block .command_parameter_group .param_input_type_isarray:hover,
+    #root_command .command_title:hover,
+    #root_command .command_parameter_group>.list_cell>.param_title:hover {
+      background-color: #000a;
+      color: #fff9;
+    }
+
+    #root_param .param_title:hover>span,
+    #root_command .command_title:hover>span,
+    #root_command .command_parameter_group>.list_cell>.param_title:hover>span {
+      color: #fff9;
+    }
+
+    .root {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      align-items: center;
+
+      width: 50%;
+      margin: 0 auto;
+      overflow: hidden;
+
+      border: 1px solid #aaaeb3;
+      border-bottom: none;
+    }
+
+    .root_title {
+      transition: all 0.15s ease-in;
+      width: 100%;
+      height: 25px;
+      text-align: center;
+    }
+
+    /* .root_title:hover {
+      background-color: #000a;
+      color: #fff9;
+    } */
+
+    .title {
+      line-height: 24px;
+    }
+
+    .root:last-of-type {
+      border: 1px solid #aaaeb3;
+    }
+
+    .block {
+      width: 100%;
+      min-height: 1.5em;
+
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: flex-start;
+    }
+
+    .block>.title {
+      width: 20%;
+    }
+
+    .sub_title {
+      width: 176px;
+    }
+
+    .origin_name {
+      font-size: small;
+      color: #0009;
+    }
+
+    .data {
+      border: none;
+      flex: auto;
+    }
+
+    label,
+    button,
+    .title {
+      user-select: none;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+
+      font-size: 1em;
+      font-family: monospace;
+
+      border: none;
+      padding: 0px;
+      overflow: hidden;
+
+      background-color: #0001;
+    }
+
+    input {
+      border: none;
+      height: 21px;
+    }
+
+    #root_param .param.block select.param_input_type,
+    #root_command .block .command_parameter_group select.param_input_type {
+      width: calc(100% - 4px - 4em);
+    }
+
+    #root_param .param.block .param_input_type_isarray,
+    #root_command .block .command_parameter_group .param_input_type_isarray {
+      transition: all 0.15s ease-in;
+      width: 4em;
+      height: 21px;
+      background-color: #0001;
+
+      user-select: none;
+    }
+
+    /* #root_param .param.block .param_input_type_isarray:hover,
+    #root_command .block .command_parameter_group .param_input_type_isarray:hover {
+      background-color: #000a;
+      color: #fff9;
+    } */
+
+    #root_param .param.block .param_input_type_isarray[checked],
+    #root_command .block .command_parameter_group .param_input_type_isarray[checked] {
+      background-color: #000a;
+      color: #fff9;
+    }
+
+    .data>textarea,
+    #display_plugin>textarea {
+      resize: vertical;
+      height: 70px;
+
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+    }
+
+    #root_param .param_title,
+    #root_command .command_title,
+    #root_param .param_title>span,
+    #root_command .command_title>span,
+    #root_command .command_parameter_group>.list_cell>.param_title,
+    #root_command .command_parameter_group>.list_cell>.param_title>span {
+      transition: all 0.15s ease-in;
+    }
+
+    /* #root_param .param_title:hover,
+    #root_command .command_title:hover {
+      background-color: #000a;
+      color: #fff9;
+    } */
+
+    /* #root_param .param_title:hover>span,
+    #root_command .command_title:hover>span {
+      color: #fff9;
+    } */
+
+    .list_cell {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      gap: 4px;
+    }
+
+    .list_cell:last-child {
+      margin-bottom: 5px;
+    }
+
+    .group_list_cell {
+      padding-left: 1em;
+    }
+
+    .group_list_cell>.list_cell {
+      margin: 0;
+    }
+
+    .group_list_cell.param_type_select>.list_cell>* {
+      flex: 1;
+      width: 0;
+    }
+
+    .group_list_cell.param_type_select>.list_cell>span {
+      flex: 0.9;
+    }
+
+    .group_list_cell.param_type_select>.list_cell>div {
+      flex: 0.45;
+    }
+
+    .group_list_cell.param_type_combo>.list_cell>* {
+      flex: 34px;
+    }
+
+    .group_list_cell.param_type_combo>.list_cell>input {
+      flex: 5
+    }
+
+    .group_list_cell.param_type_combo>.list_cell>div {
+      flex: none;
+      margin: 0 4px 0 0;
+    }
+
+    .after_input_list,
+    .before_input_list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #root_command .command.block .command_input_list {
+      width: 80%;
+    }
+
+    /* #root_command .command_parameter_group>.list_cell>.param_title:hover {
+      background-color: #000a;
+      color: #fff9;
+    } */
+
+    /* #root_command .command_parameter_group>.list_cell>.param_title:hover>span {
+      color: #fff9;
+    } */
+
+    #root_command .command_parameter_group>.list_cell:nth-child(n+2) {
+      padding-left: 1em;
+    }
+
+
+
+    @media (max-width: 1400px) {
+      #build_result_button {
+        left: calc(85% + 5px);
+      }
+
+      .root {
+        width: 70%;
+      }
+    }
+
+    @media (max-width: 1019px) {
+      .block>.title {
+        width: 17%;
+      }
+
+      .sub_title {
+        width: 102px;
+      }
+
+      .block .origin_name {
+        display: none;
+      }
+    }
+
+    @media (max-width: 950px) {
+      .group_list_cell.param_type_select>.list_cell {
+        display: grid;
+        justify-content: start;
+        align-items: start;
+        justify-items: start;
+        grid-template-columns: 1fr 5fr;
+        gap: 0;
+
+        margin-top: 2px;
+      }
+
+      .group_list_cell.param_type_select>.list_cell>* {
+        width: 100%;
+      }
+
+      .group_list_cell.param_type_select>.list_cell>div {
+        grid-column-start: 2;
+      }
+    }
+
+    @media (max-width: 740px) {
+      body {
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 732px) {
+      .group_list_cell.param_type_select>.list_cell {
+        grid-template-columns: 1fr 4fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .sub_title {
+        width: 109px;
+      }
+
+      #build_result_button {
+        left: auto;
+        right: 5px;
+      }
+
+      .root {
+        width: 80%;
+      }
+    }
+
+    @media (max-width: 542px) {
+      .group_list_cell.param_type_select>.list_cell {
+        grid-template-columns: 1fr 3fr;
+      }
+    }
+
+    @media (max-width: 500px) {
+      #build_result_button {
+        left: auto;
+        right: 5px;
+      }
+
+      .root {
+        width: 95%;
+      }
+    }
+  </style>
+  <!-- css -->
+  <!-- js -->
+  <script src="./src/index.js"></script>
+  <!-- js -->
+</head>
+
+<body>
+  <button type="button" id="build_result_button" onclick="setBuildResult()">建立</button>
+  <div id="root">
+    <div id="root_meta" class="root">
+      <div class="root_title" onclick="onRootTitleClick('meta')">
+        <span class="title">Metadata</span>
+      </div>
+      <!-- target -->
+      <div class="target block">
+        <span class="target_title title">平台<span class="origin_name">(target)</span>：</span>
+        <div class="target_input data_input data">
+          <input type="checkbox" id="is_support_mz" style="width: 1em; height: 1em;">
+          <label for="is_support_mz">support MZ</label>
+        </div>
+      </div>
+      <!-- target -->
+      <!-- author -->
+      <div class="author block">
+        <span class="author_title title">作者<span class="origin_name">(author)</span>：</span>
+        <div class="author_input data_input data">
+          <input type="text" placeholder="Name">
+        </div>
+      </div>
+      <!-- author -->
+      <!-- url -->
+      <div class="url block">
+        <span class="url_title title">網址<span class="origin_name">(url)</span>：</span>
+        <div class="url_input data_input data">
+          <input type="text" placeholder="http://127.0.0.1">
+        </div>
+      </div>
+      <!-- url -->
+      <!-- help -->
+      <div class="help block">
+        <span class="help_title title">概述<span class="origin_name">(help)</span>：</span>
+        <div class="help_input data_input data">
+          <input type="text" placeholder="One line of descript">
+        </div>
+      </div>
+      <!-- help -->
+      <!-- desc -->
+      <div class="desc block">
+        <span class="desc_title title">說明<span class="origin_name">(plugindesc)</span>：</span>
+        <div class="desc_input data_input data">
+          <textarea placeholder="Detail of this plugin"></textarea>
+        </div>
+      </div>
+      <!-- desc -->
+    </div>
+    <div id="root_depen" class="root">
+      <div class="root_title" onclick="onRootTitleClick('depen')">
+        <span class="title">Dependency</span>
+      </div>
+      <!-- base -->
+      <div class="base block">
+        <span class="base_title title">依賴<span class="origin_name">(base)</span>：</span>
+        <div class="base_input data_input data">
+          <input type="text" id="" placeholder="plugin name">
+        </div>
+      </div>
+      <!-- base -->
+      <!-- after -->
+      <div class="after block">
+        <span class="after_title title">前置<span class="origin_name">(orderAfter)</span>：</span>
+        <div class="after_input_list data_input data">
+          <!--  -->
+          <div class="list_cell" data-id="0">
+            <input type="text" placeholder="plugin name">
+            <button type="button" class="append_order_after_plugin"
+              onclick="DependencyControl.useAppendAfterPluginCell(0)">Add</button>
+            <button type="button" class="delete_order_after_plugin"
+              onclick="DependencyControl.useClearInputValue('after')">Clr</button>
+          </div>
+        </div>
+      </div>
+      <!-- after -->
+      <!-- before -->
+      <div class="before block">
+        <span class="before_title title">後置<span class="origin_name">(orderBefore)</span>：</span>
+        <div class="before_input_list data_input data">
+          <div class="list_cell" data-id="0">
+            <input type="text" placeholder="plugin name">
+            <button type="button" class="append_order_before_plugin"
+              onclick="DependencyControl.useAppendBeforePluginCell(0)">Add</button>
+            <button type="button" class="delete_order_before_plugin"
+              onclick="DependencyControl.useClearInputValue('before')">Clr</button>
+          </div>
+        </div>
+      </div>
+      <!-- before -->
+    </div>
+    <div id="root_param" class="root">
+      <div class="root_title" onclick="onRootTitleClick('parm')">
+        <span class="title">Parameters</span>
+      </div>
+
+      <!-- base -->
+      <div class="param block" data-id="0">
+        <span class="param_title title" onclick="ParameterControl.onMainTitleClick(0)">參數<span
+            class="origin_name">(param)</span>：</span>
+        <div class="param_input data_input data">
+          <div class="list_cell">
+            <input class="param_input_name" type="text" placeholder="parameter name">
+            <button type="button" class="append_parameter" onclick="ParameterControl.onMainAddClick(0)">Add</button>
+            <button type="button" class="delete_parameter" onclick="ParameterControl.onMainClrClick(0)">Clr</button>
+          </div>
+          <div class="list_cell">
+            <span class="text_title title sub_title">名稱<span class="origin_name">(text)</span>：</span>
+            <input class="param_input_display" type="text" placeholder="display name">
+          </div>
+          <div class="list_cell">
+            <span class="desc_title title sub_title">描述<span class="origin_name">(desc)</span>：</span>
+            <input class="param_input_desc" type="text" placeholder="descript">
+          </div>
+          <div class="list_cell">
+            <span class="type_title title sub_title">類型<span class="origin_name">(type)</span>：</span>
+            <select id="id_0_param_value_type" class="param_input_type" onchange="ParameterControl.onTypeChange(0)">
+              <option value="string">字串</option>
+              <option value="mul_string">多行字串</option>
+              <option value="number">數字</option>
+              <option value="boolean">是否</option>
+
+              <option value="select">單選</option>
+              <option value="combo">多選</option>
+
+              <option value="file">檔案</option>
+
+              <option value="actor">角色</option>
+              <option value="class">職業</option>
+              <option value="skill">技能</option>
+              <option value="item">道具</option>
+              <option value="weapon">武器</option>
+              <option value="armor">裝備</option>
+              <option value="enemy">敵人</option>
+              <option value="troop">敵隊</option>
+              <option value="state">狀態</option>
+              <option value="animation">動畫</option>
+              <option value="tileset">圖塊集</option>
+              <option value="common_event">公共事件</option>
+              <option value="map">地圖</option>
+              <option value="location">座標</option>
+              <option value="switch">開關</option>
+              <option value="variable">變數</option>
+              <option value="struct">自定義</option>
+            </select>
+            <span class="param_input_type_isarray"
+              onclick="ParameterControl.onTypeIsArrayClick(0)">&nbsp;array&nbsp;</span>
+          </div>
+          <div class="list_cell">
+            <span class="default_title title sub_title">預設值<span class="origin_name">(default)</span>：</span>
+            <input class="param_input_default" type="text" placeholder="default value">
+          </div>
+          <div class="group_list_cell param_type_number" data-type="number" hidden>
+            <div class="list_cell">
+              <span class="param_title title sub_title">最大值<span class="origin_name">(max)</span>：</span>
+              <input class="param_input_maximum" type="number" placeholder="maximum value">
+            </div>
+            <div class="list_cell">
+              <span class="param_title title sub_title">最小值<span class="origin_name">(min)</span>：</span>
+              <input class="param_input_minimum" type="number" placeholder="minimum value">
+            </div>
+            <div class="list_cell">
+              <span class="param_title title sub_title">小數位<span class="origin_name">(decimals)</span>：</span>
+              <input class="param_input_decimal" type="number" placeholder="decimal length">
+            </div>
+          </div>
+          <div class="group_list_cell param_type_file" data-type="file" hidden>
+            <div class="list_cell">
+              <span class="param_title title sub_title">資料夾<span class="origin_name">(dir)</span>：</span>
+              <input class="param_input_folder" type="text" placeholder="folder of file">
+            </div>
+          </div>
+          <div class="group_list_cell param_type_boolean" data-type="boolean" hidden>
+            <div class="list_cell">
+              <span class="param_title title sub_title">開啟名稱<span class="origin_name">(on)</span>：</span>
+              <input class="param_input_switchon" type="text" placeholder="display name of switch on">
+            </div>
+            <div class="list_cell">
+              <span class="param_title title sub_title">關閉名稱<span class="origin_name">(off)</span>：</span>
+              <input class="param_input_switchoff" type="text" placeholder="display name of switch off">
+            </div>
+          </div>
+          <div class="group_list_cell param_type_combo" data-type="combo" hidden>
+            <div class="list_cell" data-id="0">
+              <span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span>
+              <input class="param_input_combo_option" type="text" placeholder="option">
+              <div>
+                <button type="button" onclick="ParameterControl.onComboAddClick(0)"
+                  style="margin: 0 -5px 0 0;">+</button>
+                <button type="button" onclick="ParameterControl.onComboClrClick(0)">-</button>
+              </div>
+            </div>
+          </div>
+          <div class="group_list_cell param_type_select" data-type="select" hidden>
+            <div class="list_cell" data-id="0">
+              <span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span>
+              <input class="param_input_select_name" type="text" placeholder="display name">
+              <span class="param_title title sub_title">實際值<span class="origin_name">(value)</span>：</span>
+              <input class="param_input_select_value" type="text" placeholder="option value">
+              <div>
+                <button type="button" onclick="ParameterControl.onSelectAddClick(0)"
+                  style="margin: 0 -5px 0 0;">+</button>
+                <button type="button" onclick="ParameterControl.onSelectClrClick(0)">-</button>
+              </div>
+            </div>
+          </div>
+          <div class="list_cell">
+            <span class="parent_title title sub_title">上級參數<span class="origin_name">(parent)</span>：</span>
+            <input class="param_input_parent" type="parent" placeholder="parent parameter name">
+          </div>
+
+        </div>
+      </div>
+      <!-- base -->
+
+    </div>
+    <div id="root_command" class="root">
+      <div class="root_title" onclick="onRootTitleClick('comn')">
+        <span class="title">Event Command</span>
+      </div>
+
+      <!-- command -->
+      <div class="command block" data-id="0">
+        <span class="command_title title" onclick="CommandControl.onMainTitleClick(0)">指令<span
+            class="origin_name">(command)</span>：</span>
+        <div class="command_input_list data_input data">
+          <div class="list_cell">
+            <input class="command_input_name" type="text" placeholder="command name">
+            <button type="button" class="append_command" onclick="CommandControl.onMainAddClick(0)">Add</button>
+            <button type="button" class="delete_command" onclick="CommandControl.onMainClrClick(0)">Clr</button>
+          </div>
+          <div class="list_cell">
+            <span class="text_title title sub_title">名稱<span class="origin_name">(text)</span>：</span>
+            <input class="command_input_display" type="text" placeholder="display name">
+          </div>
+          <div class="list_cell">
+            <span class="desc_title title sub_title">描述<span class="origin_name">(desc)</span>：</span>
+            <input class="command_input_desc" type="text" placeholder="descript">
+          </div>
+
+          <div class="command_parameter_group" data-id="0">
+            <div class="list_cell">
+              <span class="param_title title sub_title" onclick="CommandControl.onParamTitleClick(0)">參數<span
+                  class="origin_name">(arg)</span>：</span>
+              <input class="param_input_name" type="text" placeholder="code name">
+              <button type="button" class="append_parameter" onclick="CommandControl.onParamAddClick(0)">Add</button>
+              <button type="button" class="delete_parameter" onclick="CommandControl.onParamClrClick(0)">Clr</button>
+            </div>
+            <div class="list_cell">
+              <span class="text_title title sub_title">名稱<span class="origin_name">(text)</span>：</span>
+              <input class="param_input_display" type="text" placeholder="display name">
+            </div>
+            <div class="list_cell">
+              <span class="desc_title title sub_title">描述<span class="origin_name">(desc)</span>：</span>
+              <input class="param_input_desc" type="text" placeholder="descript">
+            </div>
+            <div class="list_cell">
+              <span class="type_title title sub_title">類型<span class="origin_name">(type)</span>：</span>
+              <select id="id_0_command_param_value_type" class="param_input_type"
+                onchange="CommandControl.onTypeChange(0)">
+                <option value="string">字串</option>
+                <option value="mul_string">多行字串</option>
+                <option value="number">數字</option>
+                <option value="boolean">是否</option>
+
+                <option value="select">單選</option>
+                <option value="combo">多選</option>
+
+                <option value="file">檔案</option>
+
+                <option value="actor">角色</option>
+                <option value="class">職業</option>
+                <option value="skill">技能</option>
+                <option value="item">道具</option>
+                <option value="weapon">武器</option>
+                <option value="armor">裝備</option>
+                <option value="enemy">敵人</option>
+                <option value="troop">敵隊</option>
+                <option value="state">狀態</option>
+                <option value="animation">動畫</option>
+                <option value="tileset">圖塊集</option>
+                <option value="common_event">公共事件</option>
+                <option value="map">地圖</option>
+                <option value="location">座標</option>
+                <option value="switch">開關</option>
+                <option value="variable">變數</option>
+                <option value="struct">自定義</option>
+              </select>
+              <span class="param_input_type_isarray"
+                onclick="CommandControl.onTypeIsArrayClick(0)">&nbsp;array&nbsp;</span>
+            </div>
+            <div class="list_cell">
+              <span class="default_title title sub_title">預設值<span class="origin_name">(default)</span>：</span>
+              <input class="param_input_default" type="text" placeholder="default value">
+            </div>
+            <div class="group_list_cell param_type_number" data-type="number" hidden>
+              <div class="list_cell">
+                <span class="param_title title sub_title">最大值<span class="origin_name">(max)</span>：</span>
+                <input class="param_input_maximum" type="number" placeholder="maximum value">
+              </div>
+              <div class="list_cell">
+                <span class="param_title title sub_title">最小值<span class="origin_name">(min)</span>：</span>
+                <input class="param_input_minimum" type="number" placeholder="minimum value">
+              </div>
+              <div class="list_cell">
+                <span class="param_title title sub_title">小數位<span class="origin_name">(decimals)</span>：</span>
+                <input class="param_input_decimal" type="number" placeholder="decimal length">
+              </div>
+            </div>
+            <div class="group_list_cell param_type_file" data-type="file" hidden>
+              <div class="list_cell">
+                <span class="param_title title sub_title">資料夾<span class="origin_name">(dir)</span>：</span>
+                <input class="param_input_folder" type="text" placeholder="folder of file">
+              </div>
+            </div>
+            <div class="group_list_cell param_type_boolean" data-type="boolean" hidden>
+              <div class="list_cell">
+                <span class="param_title title sub_title">開啟名稱<span class="origin_name">(on)</span>：</span>
+                <input class="param_input_switchon" type="text" placeholder="display name of switch on">
+              </div>
+              <div class="list_cell">
+                <span class="param_title title sub_title">關閉名稱<span class="origin_name">(off)</span>：</span>
+                <input class="param_input_switchoff" type="text" placeholder="display name of switch off">
+              </div>
+            </div>
+            <div class="group_list_cell param_type_combo" data-type="combo" hidden>
+              <div class="list_cell" data-id="0">
+                <span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span>
+                <input class="param_input_combo_option" type="text" placeholder="option">
+                <div>
+                  <button type="button" onclick="CommandControl.onComboAddClick(0)"
+                    style="margin: 0 -5px 0 0;">+</button>
+                  <button type="button" onclick="CommandControl.onComboClrClick(0)">-</button>
+                </div>
+              </div>
+            </div>
+            <div class="group_list_cell param_type_select" data-type="select" hidden>
+              <div class="list_cell" data-id="0">
+                <span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span>
+                <input class="param_input_select_name" type="text" placeholder="display name">
+                <span class="param_title title sub_title">實際值<span class="origin_name">(value)</span>：</span>
+                <input class="param_input_select_value" type="text" placeholder="option value">
+                <div>
+                  <button type="button" onclick="CommandControl.onSelectAddClick(0)"
+                    style="margin: 0 -5px 0 0;">+</button>
+                  <button type="button" onclick="CommandControl.onSelectClrClick(0)">-</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="list_cell">
+            <div id="id_0_command_editor" style="height: 200px; width: 100%;"></div>
+          </div>
+        </div>
+      </div>
+      <!-- command -->
+
+    </div>
+    <div id="root_display" class="root">
+      <div class="root_title" onclick="onRootTitleClick('display')">
+        <span class="title">Display</span>
+      </div>
+      <!-- plugin display -->
+      <div id="display_plugin" class="block" style="display: block;">
+        <button type="button" id="copy_result_button" onclick="setCopyToClipBoard()">複製到剪貼簿</button>
+        <span style="font-size: small; color: #0005;">
+          請注意，如果你在此編輯器內修改了任何內容，再次建立插件時將被覆蓋
+        </span>
+        <textarea placeholder="Your plugin" hidden></textarea>
+        <div id="monaco_build_display" style="height: 1000px;"></div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
