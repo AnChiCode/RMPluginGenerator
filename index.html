@@ -4,16 +4,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>RM Plugin Generator</title>
   <!-- monaco -->
   <link rel="stylesheet" data-name="vs/editor/editor.main" href="./lib/monaco-editor/min/vs/editor/editor.main.css" />
   <script>
     var require = {
-      paths: { vs: "./lib/monaco-editor/min/vs" },
-    };
+      paths: { vs: "https://unpkg.com/monaco-editor@latest/min/vs" },
+    }
   </script>
-  <script src="./lib/monaco-editor/min/vs/loader.js"></script>
-  <script src="./lib/monaco-editor/min/vs/editor/editor.main.js"></script>
+  <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
+  <script src="https://unpkg.com/monaco-editor@latest/min/vs/editor/editor.main.js"></script>
   <!-- css -->
   <style>
     body {
@@ -29,7 +29,8 @@
       transition: all 0.15s ease-in;
 
       border: none;
-      background-color: #0001;
+      /* background-color: #0001; */
+      background-color: #BEBEBE;
 
       font-family: monospace;
       font-size: 1em;
@@ -54,8 +55,8 @@
     button:hover,
     .root_title:hover,
     #root_param .param_title:hover,
-    #root_param .param.block .param_input_type_isarray:hover,
-    #root_command .block .command_parameter_group .param_input_type_isarray:hover,
+    #root_param .param.block .param_input_type_isarray[onHover],
+    #root_command .block .command_parameter_group .param_input_type_isarray[onHover],
     #root_command .command_title:hover,
     #root_command .command_parameter_group>.list_cell>.param_title:hover {
       background-color: #000a;
@@ -89,11 +90,6 @@
       height: 25px;
       text-align: center;
     }
-
-    /* .root_title:hover {
-      background-color: #000a;
-      color: #fff9;
-    } */
 
     .title {
       line-height: 24px;
@@ -152,8 +148,8 @@
       background-color: #0001;
     }
 
-    input {
-      border: none;
+    input,
+    select {
       height: 21px;
     }
 
@@ -171,12 +167,6 @@
 
       user-select: none;
     }
-
-    /* #root_param .param.block .param_input_type_isarray:hover,
-    #root_command .block .command_parameter_group .param_input_type_isarray:hover {
-      background-color: #000a;
-      color: #fff9;
-    } */
 
     #root_param .param.block .param_input_type_isarray[checked],
     #root_command .block .command_parameter_group .param_input_type_isarray[checked] {
@@ -205,17 +195,6 @@
     #root_command .command_parameter_group>.list_cell>.param_title>span {
       transition: all 0.15s ease-in;
     }
-
-    /* #root_param .param_title:hover,
-    #root_command .command_title:hover {
-      background-color: #000a;
-      color: #fff9;
-    } */
-
-    /* #root_param .param_title:hover>span,
-    #root_command .command_title:hover>span {
-      color: #fff9;
-    } */
 
     .list_cell {
       display: flex;
@@ -272,15 +251,6 @@
     #root_command .command.block .command_input_list {
       width: 80%;
     }
-
-    /* #root_command .command_parameter_group>.list_cell>.param_title:hover {
-      background-color: #000a;
-      color: #fff9;
-    } */
-
-    /* #root_command .command_parameter_group>.list_cell>.param_title:hover>span {
-      color: #fff9;
-    } */
 
     #root_command .command_parameter_group>.list_cell:nth-child(n+2) {
       padding-left: 1em;
@@ -528,8 +498,9 @@
               <option value="variable">變數</option>
               <option value="struct">自定義</option>
             </select>
-            <span class="param_input_type_isarray"
-              onclick="ParameterControl.onTypeIsArrayClick(0)">&nbsp;array&nbsp;</span>
+            <span class="param_input_type_isarray" onclick="ParameterControl.onTypeIsArrayClick(this)"
+              onmouseenter="ParameterControl.onTypeIsArrayEnter(this)"
+              onmouseleave="ParameterControl.onTypeIsArrayLeave(this)">&nbsp;array&nbsp;</span>
           </div>
           <div class="list_cell">
             <span class="default_title title sub_title">預設值<span class="origin_name">(default)</span>：</span>
@@ -671,8 +642,9 @@
                 <option value="variable">變數</option>
                 <option value="struct">自定義</option>
               </select>
-              <span class="param_input_type_isarray"
-                onclick="CommandControl.onTypeIsArrayClick(0)">&nbsp;array&nbsp;</span>
+              <span class="param_input_type_isarray" onclick="ParameterControl.onTypeIsArrayClick(this)"
+                onmouseenter="ParameterControl.onTypeIsArrayEnter(this)"
+                onmouseleave="ParameterControl.onTypeIsArrayLeave(this)">&nbsp;array&nbsp;</span>
             </div>
             <div class="list_cell">
               <span class="default_title title sub_title">預設值<span class="origin_name">(default)</span>：</span>
