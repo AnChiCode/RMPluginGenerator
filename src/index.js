@@ -1024,7 +1024,7 @@ class Builder {
 
     ${commandsCode}
 })()`
-            : false
+            : ""
 
         return "/**:"
             + [
@@ -1032,7 +1032,7 @@ class Builder {
                 ParameterBuilder.build(),
                 commandsNote,
             ]
-                .filter(([_, v]) => v !== false)
+                .filter(Fnc.getNotEmpty)
                 .join("")
             + "\n */"
             + code
