@@ -986,44 +986,74 @@ class CommandBuilder {
     }
 }
 
+class Builder {
+    static useDownloadFile(data) {
+        const file = new Blob([data], { type: "text/javascript" })
 
+        if (window?.navigator?.msSaveOrOpenBlob)
+            return void window.navigator.msSaveOrOpenBlob(file, "plugin.js")
 
-const build = () => {
-    const [commandsNote, commandsCode] = CommandBuilder.build()
-    const code = commandsCode.length > 0
-        ? `\n(()=>{
+        const a = document.createElement("a")
+        const url = URL.createObjectURL(file)
+
+        a.href = url
+        a.download = "plugin.js"
+        a.style.display = "none"
+
+        document.body.appendChild(a)
+        a.click()
+
+        setTimeout(() => {
+            document.body.removeChild(a)
+            window.URL.revokeObjectURL(url)
+        }, 0)
+    }
+
+    static onDownloadClick() {
+        if (!EDITOR_RESULT) return
+
+        const code = EDITOR_RESULT.getValue()
+        Builder.useDownloadFile(code)
+    }
+
+    static build() {
+        const [commandsNote, commandsCode] = CommandBuilder.build()
+        const code = commandsCode.length > 0
+            ? `\n(()=>{
     const filename = document.currentScript.src.split("/").pop().replace(".js", "")
 
     ${commandsCode}
 })()`
-        : ""
+            : false
 
-    return "/**:"
-        + [
-            ["info", BasicInfoBuilder.build()],
-            ["params", ParameterBuilder.build()],
-            ["command", commandsNote.length > 0 ? commandsNote : false],
-        ]
-            .filter(([_, v]) => v !== false)
-            .join("")
-        + "\n */"
-        + code
-        + "\n"
-}
+        return "/**:"
+            + [
+                BasicInfoBuilder.build(),
+                ParameterBuilder.build(),
+                commandsNote,
+            ]
+                .filter(([_, v]) => v !== false)
+                .join("")
+            + "\n */"
+            + code
+            + "\n"
+    }
 
-const setBuildResult = () => {
-    if (!EL_RESULT) return
+    static setBuildResult() {
+        if (!EL_RESULT) return
 
-    const res = build()
-    EDITOR_RESULT.setValue(res)
-}
+        const res = Builder.build()
+        EDITOR_RESULT.setValue(res)
+    }
 
-const setCopyToClipBoard = () => {
-    if (!EDITOR_RESULT) return
+    static setCopyToClipBoard() {
+        if (!EDITOR_RESULT) return
 
-    navigator.clipboard.writeText(EDITOR_RESULT.getValue())
-        .then(() => console.log("ok"))
-        .catch(console.error)
+        navigator.clipboard.writeText(EDITOR_RESULT.getValue())
+            .then(() => console.log("ok"))
+            .catch(console.error)
+    }
+
 }
 
 

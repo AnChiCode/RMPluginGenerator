@@ -360,7 +360,7 @@
 </head>
 
 <body>
-  <button type="button" id="build_result_button" onclick="setBuildResult()">建立</button>
+  <button type="button" id="build_result_button" onclick="Builder.setBuildResult()">建立</button>
   <div id="root">
     <div id="root_meta" class="root">
       <div class="root_title" onclick="onRootTitleClick('meta')">
@@ -726,10 +726,11 @@
       </div>
       <!-- plugin display -->
       <div id="display_plugin" class="block" style="display: block;">
-        <button type="button" id="copy_result_button" onclick="setCopyToClipBoard()">複製到剪貼簿</button>
-        <span style="font-size: small; color: #0005;">
+        <span style="font-size: small; color: #0005; display: block;">
           請注意，如果你在此編輯器內修改了任何內容，再次建立插件時將被覆蓋
         </span>
+        <button type="button" id="copy_result_button" onclick="Builder.setCopyToClipBoard()">複製到剪貼簿</button>
+        <button type="button" id="copy_result_button" onclick="Builder.onDownloadClick()">下載為程式檔</button>
         <textarea placeholder="Your plugin" hidden></textarea>
         <div id="monaco_build_display" style="height: 1000px;"></div>
       </div>
