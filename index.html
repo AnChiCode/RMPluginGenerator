@@ -151,8 +151,26 @@
 
     input,
     select {
+      transition: all 0.15s ease-in;
+      border-color: transparent;
       height: 21px;
     }
+
+    input:invalid {
+      transition: all 0.15s ease-in;
+      box-sizing: border-box;
+      border: 1px solid #C339;
+      box-shadow: 0 0 4px #F339;
+    }
+
+    /* input:invalid::after {
+      data-invalid="it must be start by A-Z, a-z, and _, with no white space between letters"
+      content: attr(data-invalid);
+
+      position: absolute;
+      top: 5px;
+      z-index: 1;
+    } */
 
     #root_param .param.block select.param_input_type,
     #root_command .block .command_parameter_group select.param_input_type {
@@ -461,7 +479,7 @@
             class="origin_name">(param)</span>：</span>
         <div class="param_input data_input data">
           <div class="list_cell">
-            <input class="param_input_name" type="text" placeholder="parameter name">
+            <input class="param_input_name" type="text" pattern="^[A-Za-z_]+[A-Za-z0-9_]*" placeholder="parameter name">
             <button type="button" class="append_parameter" onclick="ParameterControl.onMainAddClick(0)">Add</button>
             <button type="button" class="delete_parameter" onclick="ParameterControl.onMainClrClick(0)">Clr</button>
           </div>
@@ -558,7 +576,8 @@
               <span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span>
               <input class="param_input_select_name" type="text" placeholder="display name">
               <span class="param_title title sub_title">實際值<span class="origin_name">(value)</span>：</span>
-              <input class="param_input_select_value" type="text" placeholder="option value">
+              <input class="param_input_select_value" type="text" pattern="^[A-Za-z_]+[A-Za-z0-9_]*"
+                placeholder="option value">
               <div>
                 <button type="button" onclick="ParameterControl.onSelectAddClick(0)"
                   style="margin: 0 -5px 0 0;">+</button>
@@ -587,7 +606,7 @@
             class="origin_name">(command)</span>：</span>
         <div class="command_input_list data_input data">
           <div class="list_cell">
-            <input class="command_input_name" type="text" placeholder="command name">
+            <input class="command_input_name" type="text" pattern="^[A-Za-z_]+[A-Za-z0-9_]*" placeholder="command name">
             <button type="button" class="append_command" onclick="CommandControl.onMainAddClick(0)">Add</button>
             <button type="button" class="delete_command" onclick="CommandControl.onMainClrClick(0)">Clr</button>
           </div>
@@ -604,7 +623,7 @@
             <div class="list_cell">
               <span class="param_title title sub_title" onclick="CommandControl.onParamTitleClick(0)">參數<span
                   class="origin_name">(arg)</span>：</span>
-              <input class="param_input_name" type="text" placeholder="code name">
+              <input class="param_input_name" type="text" pattern="^[A-Za-z_]+[A-Za-z0-9_]*" placeholder="code name">
               <button type="button" class="append_parameter" onclick="CommandControl.onParamAddClick(0)">Add</button>
               <button type="button" class="delete_parameter" onclick="CommandControl.onParamClrClick(0)">Clr</button>
             </div>
@@ -702,7 +721,8 @@
                 <span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span>
                 <input class="param_input_select_name" type="text" placeholder="display name">
                 <span class="param_title title sub_title">實際值<span class="origin_name">(value)</span>：</span>
-                <input class="param_input_select_value" type="text" placeholder="option value">
+                <input class="param_input_select_value" type="text" pattern="^[A-Za-z_]+[A-Za-z0-9_]*"
+                  placeholder="option value">
                 <div>
                   <button type="button" onclick="CommandControl.onSelectAddClick(0)"
                     style="margin: 0 -5px 0 0;">+</button>

@@ -57,8 +57,16 @@ class Fnc {
      * @param {string} val 
      * @returns {string | false}
      */
-    static getNotEmpty(val) { return val && val.length > 0 ? val : false }
+    static getIfNotEmpty(val) { return val && val.length > 0 ? val : false }
     static getIsEmpty(val) { return !val || val.length === 0 }
+
+    /**
+     * @param {HTMLInputElement} node 
+     * @returns {boolean}
+     */
+    static getInputIsMatch(node) {
+        return node?.validity && node.validity.patternMismatch === false
+    }
 }
 
 
@@ -196,7 +204,7 @@ class ParameterControl {
         PARAM_SELECT_OPTION_COUNT++
 
         return HTMLControl.getNodeFromText(
-            `<div class="param block" data-id="${PARAM_MAIN_LIST_COUNT}"><span class="param_title title" onclick="ParameterControl.onMainTitleClick(${PARAM_MAIN_LIST_COUNT})">參數<span class="origin_name">(param)</span>：</span><div class="param_input data_input data"><div class="list_cell"><input class="param_input_name" type="text" placeholder="parameter name"><button type="button" class="append_parameter" onclick="ParameterControl.onMainAddClick(${PARAM_MAIN_LIST_COUNT})">Add</button><button type="button" class="delete_parameter" onclick="ParameterControl.onMainDelClick(${PARAM_MAIN_LIST_COUNT})">Del</button></div><div class="list_cell"><span class="text_title title sub_title">名稱<span class="origin_name">(text)</span>：</span><input class="param_input_display" type="text" placeholder="display name"></div><div class="list_cell"><span class="desc_title title sub_title">描述<span class="origin_name">(desc)</span>：</span><input class="param_input_desc" type="text" placeholder="descript"></div><div class="list_cell"><span class="type_title title sub_title">類型<span class="origin_name">(type)</span>：</span><select id="id_${PARAM_MAIN_LIST_COUNT}_param_value_type" class="param_input_type" onchange="ParameterControl.onTypeChange(${PARAM_MAIN_LIST_COUNT})"><option value="string">字串</option><option value="mul_string">多行字串</option><option value="number">數字</option><option value="boolean">是否</option><option value="select">單選</option><option value="combo">多選</option><option value="file">檔案</option><option value="actor">角色</option><option value="class">職業</option><option value="skill">技能</option><option value="item">道具</option><option value="weapon">武器</option><option value="armor">裝備</option><option value="enemy">敵人</option><option value="troop">敵隊</option><option value="state">狀態</option><option value="animation">動畫</option><option value="tileset">圖塊集</option><option value="common_event">公共事件</option><option value="map">地圖</option><option value="location">座標</option><option value="switch">開關</option><option value="variable">變數</option><option value="struct">自定義</option></select><span class="param_input_type_isarray" onclick="ParameterControl.onTypeIsArrayClick(this)" onmouseenter="ParameterControl.onTypeIsArrayEnter(this)" onmouseleave="ParameterControl.onTypeIsArrayLeave(this)">&nbsp;array&nbsp;</span></div><div class="list_cell"><span class="default_title title sub_title">預設值<span class="origin_name">(default)</span>：</span><input class="param_input_default" type="text" placeholder="default value"></div><div class="group_list_cell param_type_number" data-type="number" hidden><div class="list_cell"><span class="param_title title sub_title">最大值<span class="origin_name">(max)</span>：</span><input class="param_input_maximum" type="number" placeholder="maximum value"></div><div class="list_cell"><span class="param_title title sub_title">最小值<span class="origin_name">(min)</span>：</span><input class="param_input_minimum" type="number" placeholder="minimum value"></div><div class="list_cell"><span class="param_title title sub_title">小數位<span class="origin_name">(decimals)</span>：</span><input class="param_input_decimal" type="number" placeholder="decimal length"></div></div><div class="group_list_cell param_type_file" data-type="file" hidden><div class="list_cell"><span class="param_title title sub_title">資料夾<span class="origin_name">(dir)</span>：</span><input class="param_input_folder" type="text" placeholder="folder of file"></div></div><div class="group_list_cell param_type_boolean" data-type="boolean" hidden><div class="list_cell"><span class="param_title title sub_title">開啟名稱<span class="origin_name">(on)</span>：</span><input class="param_input_switchon" type="text" placeholder="display name of switch on"></div><div class="list_cell"><span class="param_title title sub_title">關閉名稱<span class="origin_name">(off)</span>：</span><input class="param_input_switchoff" type="text" placeholder="display name of switch off"></div></div><div class="group_list_cell param_type_combo" data-type="combo" hidden><div class="list_cell" data-id="${PARAM_COMBO_OPTION_COUNT}"><span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span><input class="param_input_combo_option" type="text" placeholder="option"><div><button type="button" onclick="ParameterControl.onComboAddClick(${PARAM_COMBO_OPTION_COUNT})" style="margin: 0 4px 0 0;">+</button><button type="button" onclick="ParameterControl.onComboClrClick(${PARAM_COMBO_OPTION_COUNT})">-</button></div></div></div><div class="group_list_cell param_type_select" data-type="select" hidden><div class="list_cell" data-id="${PARAM_SELECT_OPTION_COUNT}"><span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span><input class="param_input_select_name" type="text" placeholder="display name"><span class="param_title title sub_title">實際值<span class="origin_name">(value)</span>：</span><input class="param_input_select_value" type="text" placeholder="option value"><div><button type="button" onclick="ParameterControl.onSelectAddClick(${PARAM_SELECT_OPTION_COUNT})" style="margin: 0 4px 0 0;">+</button><button type="button" onclick="ParameterControl.onSelectClrClick(${PARAM_SELECT_OPTION_COUNT})">-</button></div></div></div><div class="list_cell"><span class="parent_title title sub_title">上級參數<span class="origin_name">(parent)</span>：</span><input class="param_input_parent" type="parent" placeholder="parent parameter name"></div></div></div>`
+            `<div class="param block" data-id="${PARAM_MAIN_LIST_COUNT}"><span class="param_title title" onclick="ParameterControl.onMainTitleClick(${PARAM_MAIN_LIST_COUNT})">參數<span class="origin_name">(param)</span>：</span><div class="param_input data_input data"><div class="list_cell"><input class="param_input_name" pattern="^[A-Za-z_]+[A-Za-z0-9_]*" type="text" placeholder="parameter name"><button type="button" class="append_parameter" onclick="ParameterControl.onMainAddClick(${PARAM_MAIN_LIST_COUNT})">Add</button><button type="button" class="delete_parameter" onclick="ParameterControl.onMainDelClick(${PARAM_MAIN_LIST_COUNT})">Del</button></div><div class="list_cell"><span class="text_title title sub_title">名稱<span class="origin_name">(text)</span>：</span><input class="param_input_display" type="text" placeholder="display name"></div><div class="list_cell"><span class="desc_title title sub_title">描述<span class="origin_name">(desc)</span>：</span><input class="param_input_desc" type="text" placeholder="descript"></div><div class="list_cell"><span class="type_title title sub_title">類型<span class="origin_name">(type)</span>：</span><select id="id_${PARAM_MAIN_LIST_COUNT}_param_value_type" class="param_input_type" onchange="ParameterControl.onTypeChange(${PARAM_MAIN_LIST_COUNT})"><option value="string">字串</option><option value="mul_string">多行字串</option><option value="number">數字</option><option value="boolean">是否</option><option value="select">單選</option><option value="combo">多選</option><option value="file">檔案</option><option value="actor">角色</option><option value="class">職業</option><option value="skill">技能</option><option value="item">道具</option><option value="weapon">武器</option><option value="armor">裝備</option><option value="enemy">敵人</option><option value="troop">敵隊</option><option value="state">狀態</option><option value="animation">動畫</option><option value="tileset">圖塊集</option><option value="common_event">公共事件</option><option value="map">地圖</option><option value="location">座標</option><option value="switch">開關</option><option value="variable">變數</option><option value="struct">自定義</option></select><span class="param_input_type_isarray" onclick="ParameterControl.onTypeIsArrayClick(this)" onmouseenter="ParameterControl.onTypeIsArrayEnter(this)" onmouseleave="ParameterControl.onTypeIsArrayLeave(this)">&nbsp;array&nbsp;</span></div><div class="list_cell"><span class="default_title title sub_title">預設值<span class="origin_name">(default)</span>：</span><input class="param_input_default" type="text" placeholder="default value"></div><div class="group_list_cell param_type_number" data-type="number" hidden><div class="list_cell"><span class="param_title title sub_title">最大值<span class="origin_name">(max)</span>：</span><input class="param_input_maximum" type="number" placeholder="maximum value"></div><div class="list_cell"><span class="param_title title sub_title">最小值<span class="origin_name">(min)</span>：</span><input class="param_input_minimum" type="number" placeholder="minimum value"></div><div class="list_cell"><span class="param_title title sub_title">小數位<span class="origin_name">(decimals)</span>：</span><input class="param_input_decimal" type="number" placeholder="decimal length"></div></div><div class="group_list_cell param_type_file" data-type="file" hidden><div class="list_cell"><span class="param_title title sub_title">資料夾<span class="origin_name">(dir)</span>：</span><input class="param_input_folder" type="text" placeholder="folder of file"></div></div><div class="group_list_cell param_type_boolean" data-type="boolean" hidden><div class="list_cell"><span class="param_title title sub_title">開啟名稱<span class="origin_name">(on)</span>：</span><input class="param_input_switchon" type="text" placeholder="display name of switch on"></div><div class="list_cell"><span class="param_title title sub_title">關閉名稱<span class="origin_name">(off)</span>：</span><input class="param_input_switchoff" type="text" placeholder="display name of switch off"></div></div><div class="group_list_cell param_type_combo" data-type="combo" hidden><div class="list_cell" data-id="${PARAM_COMBO_OPTION_COUNT}"><span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span><input class="param_input_combo_option" type="text" placeholder="option"><div><button type="button" onclick="ParameterControl.onComboAddClick(${PARAM_COMBO_OPTION_COUNT})" style="margin: 0 4px 0 0;">+</button><button type="button" onclick="ParameterControl.onComboClrClick(${PARAM_COMBO_OPTION_COUNT})">-</button></div></div></div><div class="group_list_cell param_type_select" data-type="select" hidden><div class="list_cell" data-id="${PARAM_SELECT_OPTION_COUNT}"><span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span><input class="param_input_select_name" type="text" placeholder="display name"><span class="param_title title sub_title">實際值<span class="origin_name">(value)</span>：</span><input class="param_input_select_value" type="text" pattern="^[A-Za-z_]+[A-Za-z0-9_]*" placeholder="option value"><div><button type="button" onclick="ParameterControl.onSelectAddClick(${PARAM_SELECT_OPTION_COUNT})" style="margin: 0 4px 0 0;">+</button><button type="button" onclick="ParameterControl.onSelectClrClick(${PARAM_SELECT_OPTION_COUNT})">-</button></div></div></div><div class="list_cell"><span class="parent_title title sub_title">上級參數<span class="origin_name">(parent)</span>：</span><input class="param_input_parent" type="parent" placeholder="parent parameter name"></div></div></div>`
         )
     }
 
@@ -275,7 +283,7 @@ class ParameterControl {
               <span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span>
               <input class="param_input_select_name" type="text" placeholder="display name">
               <span class="param_title title sub_title">實際值<span class="origin_name">(value)</span>：</span>
-              <input class="param_input_select_value" type="text" placeholder="option value">
+              <input class="param_input_select_value" pattern="^[A-Za-z_]+[A-Za-z0-9_]*" type="text" placeholder="option value">
               <div>
                 <button type="button" onclick="ParameterControl.onSelectAddClick(${PARAM_SELECT_OPTION_COUNT})" style="margin: 0 -5px 0 0;">+</button>
                 <button type="button" onclick="ParameterControl.onSelectDelClick(${PARAM_SELECT_OPTION_COUNT})">-</button>
@@ -352,7 +360,7 @@ class CommandControl {
             class="origin_name">(command)</span>：</span>
         <div class="command_input_list data_input data">
             <div class="list_cell">
-                <input class="command_input_name" type="text" placeholder="command name">
+                <input class="command_input_name" type="text" pattern="^[A-Za-z_]+[A-Za-z0-9_]*" placeholder="command name">
                 <button type="button" class="append_command" onclick="CommandControl.onMainAddClick(${COMMAND_MAIN_LIST_COUNT})">Add</button>
                 <button type="button" class="delete_command" onclick="CommandControl.onMainDelClick(${COMMAND_MAIN_LIST_COUNT})">Del</button>
             </div>
@@ -369,9 +377,9 @@ class CommandControl {
             <div class="list_cell">
               <span class="param_title title sub_title" onclick="CommandControl.onParamTitleClick(${COMMAND_MAIN_PARAM_COUNT})">參數<span
                   class="origin_name">(arg)</span>：</span>
-              <input class="param_input_name" type="text" placeholder="code name">
+              <input class="param_input_name" type="text" pattern="^[A-Za-z_]+[A-Za-z0-9_]*" placeholder="code name">
               <button type="button" class="append_parameter" onclick="CommandControl.onParamAddClick(${COMMAND_MAIN_PARAM_COUNT})">Add</button>
-              <button type="button" class="delete_parameter" onclick="CommandControl.onParamDelClick(${COMMAND_MAIN_PARAM_COUNT})">Del</button>
+              <button type="button" class="delete_parameter" onclick="CommandControl.onParamClrClick(${COMMAND_MAIN_PARAM_COUNT})">Clr</button>
             </div>
             <div class="list_cell">
               <span class="text_title title sub_title">名稱<span class="origin_name">(text)</span>：</span>
@@ -467,7 +475,7 @@ class CommandControl {
                 <span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span>
                 <input class="param_input_select_name" type="text" placeholder="display name">
                 <span class="param_title title sub_title">實際值<span class="origin_name">(value)</span>：</span>
-                <input class="param_input_select_value" type="text" placeholder="option value">
+                <input class="param_input_select_value" type="text" pattern="^[A-Za-z_]+[A-Za-z0-9_]*" placeholder="option value">
                 <div>
                   <button type="button" onclick="CommandControl.onSelectAddClick(${COMMAND_PARAM_SELECT_OPTION_COUNT})"
                     style="margin: 0 -5px 0 0;">+</button>
@@ -512,7 +520,7 @@ class CommandControl {
 
         el
             .querySelectorAll(
-                ".command_parameter_group:nth-child(n+2), .param_type_combo > .list_cell:nth-child(n+2), .param_type_select > .list_cell:nth-child(n+2)"
+                ".command_parameter_group ~ .command_parameter_group, .param_type_combo > .list_cell:nth-child(n+2), .param_type_select > .list_cell:nth-child(n+2)"
             )
             .forEach(e => e.remove())
 
@@ -545,7 +553,7 @@ class CommandControl {
             <div class="list_cell">
               <span class="param_title title sub_title" onclick="CommandControl.onParamTitleClick(${COMMAND_MAIN_PARAM_COUNT})">參數<span
                   class="origin_name">(arg)</span>：</span>
-              <input class="param_input_name" type="text" placeholder="code name">
+              <input class="param_input_name" type="text" pattern="^[A-Za-z_]+[A-Za-z0-9_]*" placeholder="code name">
               <button type="button" class="append_parameter" onclick="CommandControl.onParamAddClick(${COMMAND_MAIN_PARAM_COUNT})">Add</button>
               <button type="button" class="delete_parameter" onclick="CommandControl.onParamDelClick(${COMMAND_MAIN_PARAM_COUNT})">Del</button>
             </div>
@@ -640,7 +648,7 @@ class CommandControl {
                 <span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span>
                 <input class="param_input_select_name" type="text" placeholder="display name">
                 <span class="param_title title sub_title">實際值<span class="origin_name">(value)</span>：</span>
-                <input class="param_input_select_value" type="text" placeholder="option value">
+                <input class="param_input_select_value" type="text" pattern="^[A-Za-z_]+[A-Za-z0-9_]*" placeholder="option value">
                 <div>
                   <button type="button" onclick="CommandControl.onSelectAddClick(${COMMAND_PARAM_SELECT_OPTION_COUNT})"
                     style="margin: 0 -5px 0 0;">+</button>
@@ -719,7 +727,7 @@ class CommandControl {
               <span class="param_title title sub_title">選項<span class="origin_name">(option)</span>：</span>
               <input class="param_input_select_name" type="text" placeholder="display name">
               <span class="param_title title sub_title">實際值<span class="origin_name">(value)</span>：</span>
-              <input class="param_input_select_value" type="text" placeholder="option value">
+              <input class="param_input_select_value" type="text" pattern="^[A-Za-z_]+[A-Za-z0-9_]*" placeholder="option value">
               <div>
                 <button type="button" onclick="CommandControl.onSelectAddClick(${COMMAND_PARAM_SELECT_OPTION_COUNT})" style="margin: 0 -5px 0 0;">+</button>
                 <button type="button" onclick="CommandControl.onSelectDelClick(${COMMAND_PARAM_SELECT_OPTION_COUNT})">-</button>
@@ -753,10 +761,10 @@ class CommandControl {
 class BasicInfoBuilder {
 
     static get getIsTargetMZ() { return EL_TARGET?.checked || false }
-    static get getAuthor() { return Fnc.getNotEmpty(EL_AUTHOR?.value) }
-    static get getURL() { return Fnc.getNotEmpty(EL_URL?.value) }
-    static get getHelp() { return Fnc.getNotEmpty(EL_HELP?.value) }
-    static get getDesc() { return Fnc.getNotEmpty(EL_DESC?.value) }
+    static get getAuthor() { return Fnc.getIfNotEmpty(EL_AUTHOR?.value) }
+    static get getURL() { return Fnc.getIfNotEmpty(EL_URL?.value) }
+    static get getHelp() { return Fnc.getIfNotEmpty(EL_HELP?.value) }
+    static get getDesc() { return Fnc.getIfNotEmpty(EL_DESC?.value) }
 
     static getMetadata() {
         const map = Fnc.map("")
@@ -767,16 +775,16 @@ class BasicInfoBuilder {
         const help = map(BasicInfoBuilder.getHelp, v => `\n * @help ${v}`)
         const desc = map(BasicInfoBuilder.getDesc, v => `\n * @plugindesc ${v.replaceAll("\n", "\n * ")}`)
 
-        return Fnc.getNotEmpty(isMZ + author + url + help + desc)
+        return Fnc.getIfNotEmpty(isMZ + author + url + help + desc)
     }
 
-    static get getBaseDepend() { return Fnc.getNotEmpty(EL_BASE?.value) }
+    static get getBaseDepend() { return Fnc.getIfNotEmpty(EL_BASE?.value) }
     static getOrderDependPlugins(elList) {
         if (!elList) return false
 
         const ls = [...elList.querySelectorAll(".list_cell > input")]
             .map(el => el.value)
-            .filter(Fnc.getNotEmpty)
+            .filter(Fnc.getIfNotEmpty)
 
         return ls.length === 0 ? false : ls
     }
@@ -788,11 +796,11 @@ class BasicInfoBuilder {
         const after = map(BasicInfoBuilder.getOrderDependPlugins(EL_BASE_AFTER_LIST), v => `\n * @orderAfter ${v.join("\n * @orderAfter ")}`)
         const before = map(BasicInfoBuilder.getOrderDependPlugins(EL_BASE_BEFORE_LIST), v => `\n * @orderBefore ${v.join("\n * @orderBefore ")}`)
 
-        return Fnc.getNotEmpty(base + after + before)
+        return Fnc.getIfNotEmpty(base + after + before)
     }
 
     static build() {
-        return Fnc.getNotEmpty(
+        return Fnc.getIfNotEmpty(
             [BasicInfoBuilder.getMetadata(), BasicInfoBuilder.getDependency(),]
                 .filter(v => v)
                 .join("\n * ")
@@ -803,7 +811,7 @@ class BasicInfoBuilder {
 class ParameterBuilder {
     static getChildValueIfExist(node) {
         return className =>
-            Fnc.getNotEmpty(node.getElementsByClassName(className)[0]?.value)
+            Fnc.getIfNotEmpty(node.getElementsByClassName(className)[0]?.value)
     }
 
     /** @return {[string, string | false][] | null} */
@@ -832,7 +840,7 @@ class ParameterBuilder {
         return [...comboOptions]
             .map(list => {
                 const opt = list.getElementsByClassName("param_input_combo_option")[0]?.value
-                return ["option", Fnc.getNotEmpty(opt)]
+                return ["option", Fnc.getIfNotEmpty(opt)]
             })
     }
 
@@ -883,10 +891,22 @@ class ParameterBuilder {
         return `\n * @type ${typ}${arr}`
     }
 
+    /**
+     * @param {HTMLElement} node 
+     * @returns {string | false}
+     */
+    static getParamName(node) {
+        const el = node.querySelector(".param_input_name")
+
+        return Fnc.getInputIsMatch(el)
+            ? Fnc.getIfNotEmpty(el.value)
+            : false
+    }
+
     static buildSingleParam(root) {
         const prepareGetValue = ParameterBuilder.getChildValueIfExist(root)
 
-        const param = prepareGetValue("param_input_name")
+        const param = ParameterBuilder.getParamName(root)
         if (!param) return
 
         const type = prepareGetValue("param_input_type")
@@ -934,7 +954,10 @@ class CommandBuilder {
     }
 
     static getAllParamsName(block) {
-        return [...block.querySelectorAll(".param_input_name")].map(e => e.value).join(", ")
+        return [...block.querySelectorAll(".param_input_name")]
+            .filter(Fnc.getInputIsMatch)
+            .map(e => e.value)
+            .join(", ")
     }
 
     static buildBlockCode(id, name, paramsName) {
@@ -946,11 +969,21 @@ class CommandBuilder {
     })`
     }
 
-    static buildSingleBlock(block) {
-        const name = block.querySelector(".command_input_name")?.value
-        if (Fnc.getIsEmpty(name)) return false
+    /**
+     * @param {HTMLElement} node 
+     */
+    static getCommandName(node) {
+        const el = node.querySelector(".command_input_name")
+        return Fnc.getInputIsMatch(el)
+            ? Fnc.getIfNotEmpty(el?.value)
+            : false
+    }
 
-        const text = block.querySelector(".command_input_display")?.value || ""
+    static buildSingleBlock(block) {
+        const name = CommandBuilder.getCommandName(block)
+        if (!name) return false
+
+        const text = block.querySelector(".command_input_display")?.value || name
         const desc = block.querySelector(".command_input_desc")?.value || ""
 
         const params = CommandBuilder.buildBlockParams(block)
@@ -967,6 +1000,8 @@ class CommandBuilder {
                     ["params", params],
                 ].map(([n, v]) => {
                     if (n === "params") return v
+                    if (n === "desc" && v.length === 0) return ""
+
                     return `\n * @${n} ${v}`
                 }).join(""),
             code
@@ -1032,7 +1067,7 @@ class Builder {
                 ParameterBuilder.build(),
                 commandsNote,
             ]
-                .filter(Fnc.getNotEmpty)
+                .filter(Fnc.getIfNotEmpty)
                 .join("")
             + "\n */"
             + code
