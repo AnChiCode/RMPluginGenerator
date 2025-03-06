@@ -485,7 +485,7 @@ class CommandControl {
             </div>
           </div>
 
-          <div class="list_cell">
+          <div class="list_cell" style="height: auto;">
             <div id="id_${COMMAND_MAIN_LIST_COUNT}_command_editor" style="height: 200px; width: 100%;"></div>
           </div>
         </div>
@@ -816,32 +816,17 @@ class ParameterBuilder {
 
     /** @return {[string, string | false][] | null} */
     static getSelectDetail(el) {
-        const selectOptions = el.querySelectorAll(".group_list_cell.param_type_select > .list_cell")
-        if (selectOptions.length === 0) return null
-
-        return [...selectOptions]
-            .flatMap(list => {
-                const opt = Fnc.getIsEmpty(list.getElementsByClassName("param_input_select_name")[0]?.value)
-                const val = Fnc.getIsEmpty(list.getElementsByClassName("param_input_select_value")[0]?.value)
-                if (!opt || !val) return []
-
-                return [
-                    ["option", opt],
-                    ["value", val],
-                ]
-            })
+        return [...el.querySelectorAll(".group_list_cell.param_type_select > .list_cell")]
+            .flatMap(list => [
+                ["option", Fnc.getIfNotEmpty(list.querySelector(".param_input_select_name")?.value)],
+                ["value", Fnc.getIfNotEmpty(list.querySelector(".param_input_select_value")?.value)],
+            ])
     }
 
     /** @return {[string, string | false][] | null} */
     static getComboDetail(el) {
-        const comboOptions = el.querySelectorAll(".group_list_cell.param_type_combo > .list_cell")
-        if (comboOptions.length === 0) return null
-
-        return [...comboOptions]
-            .map(list => {
-                const opt = list.getElementsByClassName("param_input_combo_option")[0]?.value
-                return ["option", Fnc.getIfNotEmpty(opt)]
-            })
+        return [...el.querySelectorAll(".group_list_cell.param_type_combo > .list_cell > .param_input_combo_option")]
+            .map(el => ["option", Fnc.getIfNotEmpty(el.value)])
     }
 
     static getDetailByType(el, type) {
@@ -918,11 +903,11 @@ class ParameterBuilder {
             + [
                 ["param", param],
                 ["parent", prepareGetValue("param_input_parent")],
+                ["text", prepareGetValue("param_input_display")],
+                ["desc", prepareGetValue("param_input_desc")],
                 ["type", ParameterBuilder.getTypeAttr(type, isArray)],
                 ["default", prepareGetValue("param_input_default")],
                 ["details", details],
-                ["text", prepareGetValue("param_input_display")],
-                ["desc", prepareGetValue("param_input_desc")],
             ]
                 .filter(([_, v]) => v)
                 .map(([n, v]) => {
@@ -940,7 +925,7 @@ class ParameterBuilder {
             .map(ParameterBuilder.buildSingleParam)
             .join("")
 
-        return ls === "" ? false : ls
+        return Fnc.getIfNotEmpty(ls)
     }
 }
 
@@ -950,6 +935,7 @@ class CommandBuilder {
     static buildBlockParams(block) {
         return [...block.getElementsByClassName("command_parameter_group")]
             .map(ParameterBuilder.buildSingleParam)
+            .map(res => res.replaceAll("@param ", "@arg "))
             .join("")
     }
 
@@ -964,7 +950,7 @@ class CommandBuilder {
         const body = EDITOR_COMMANDS.get(`id_${id}_command_editor`)?.getValue() || ""
 
         return `
-    PluginManager.registerCommand(filename, "${name}", function ({ ${paramsName} }){
+    PluginManager.registerCommand(FILENAME, "${name}", function ({ ${paramsName} }){
         ${body.replaceAll("\r\n", "\r\n        ")}
     })`
     }
@@ -1053,18 +1039,21 @@ class Builder {
 
     static build() {
         const [commandsNote, commandsCode] = CommandBuilder.build()
-        const code = commandsCode.length > 0
-            ? `\n(()=>{
-    const filename = document.currentScript.src.split("/").pop().replace(".js", "")
+        const parameterNote = ParameterBuilder.build()
 
-    ${commandsCode}
-})()`
-            : ""
+        const isHadCode = commandsCode.length > 0
+        const isHadParam = parameterNote.length > 0
+
+        const code = `\n(()=>{`
+            + (isHadCode || isHadParam ? `\n    const FILENAME = document.currentScript.src.split("/").pop().replace(".js", "")` : "")
+            + (isHadParam ? "\n    const PARAMETERS = PluginManager.parameters(FILENAME)" : "")
+            + (isHadCode ? `\n\n    ${commandsCode}` : "")
+            + "\n})()"
 
         return "/**:"
             + [
                 BasicInfoBuilder.build(),
-                ParameterBuilder.build(),
+                parameterNote,
                 commandsNote,
             ]
                 .filter(Fnc.getIfNotEmpty)
