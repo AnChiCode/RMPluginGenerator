@@ -1100,6 +1100,11 @@ monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
 });
 
 const libSource = `
+      /** 檔案名稱 */
+      const FILENAME: ?string
+      /** 插件參數 */
+      const PARAMETERS: { [name: string]: ?string }
+
       /** ［原始數據］於資料庫定義，來自 Actors.json 的可操控角色資料 */
       var $dataActors: DataActors
       /** ［原始數據］於資料庫定義，來自 Classes.json 的職業資料 */
