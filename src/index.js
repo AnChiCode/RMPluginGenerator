@@ -372,7 +372,7 @@ class CommandControl {
         COMMAND_PARAM_SELECT_OPTION_COUNT++
 
         return HTMLControl.getNodeFromText(
-            `<div class="command block" data-id="${COMMAND_MAIN_LIST_COUNT}">
+            `<div class="command block" data-id="${COMMAND_MAIN_LIST_COUNT}" data-type="command">
         <span class="command_title title" onclick="CommandControl.onMainTitleClick(${COMMAND_MAIN_LIST_COUNT})">指令<span
             class="origin_name">(command)</span>：</span>
         <div class="command_input_list data_input data">
@@ -511,6 +511,30 @@ class CommandControl {
         )
     }
 
+    static getCodeNode() {
+        if (isNaN(COMMAND_MAIN_LIST_COUNT)) return
+
+        COMMAND_MAIN_LIST_COUNT++
+
+        return HTMLControl.getNodeFromText(
+            `<div class="command block" data-id="${COMMAND_MAIN_LIST_COUNT}" data-type="code">
+        <span class="command_title title" onclick="CommandControl.onMainTitleClick(${COMMAND_MAIN_LIST_COUNT})">程式：</span>
+        <div  style="width: 80%; flex: auto;">
+
+            <div class="list_cell" style="justify-content: flex-end;">
+                <button type="button" class="append_command" onclick="CommandControl.onMainAddCodeClick(${COMMAND_MAIN_LIST_COUNT})">Add</button>
+                <button type="button" class="delete_command" onclick="CommandControl.onMainClrCodeClick(${COMMAND_MAIN_LIST_COUNT})">Clr</button>
+                <button type="button" class="delete_command" onclick="CommandControl.onMainDelClick(${COMMAND_MAIN_LIST_COUNT})">Del</button>
+            </div>
+
+            <div class="command_code">
+            <span class="command_code_tip tips">可輸入半型驚嘆號 ! 以查看及調用各類範本</span>
+            <div id="id_${COMMAND_MAIN_LIST_COUNT}_command_editor" style="height: 200px; width: 100%;"></div>
+            </div>
+        </div>
+      </div>`)
+    }
+
     static onRootAddClick() {
         const base = document.querySelector(`#root_command`)
         const node = CommandControl.getMainNode()
@@ -522,6 +546,25 @@ class CommandControl {
             document.getElementById(`id_${COMMAND_MAIN_LIST_COUNT}_command_editor`),
             {
                 value: "// here is function body",
+                language: "javascript",
+                theme: "vs-dark",
+                automaticLayout: true,
+            },
+        ))
+    }
+
+    static onRootAddCodeClick() {
+        const base = document.querySelector(`#root_command`)
+        const node = CommandControl.getCodeNode()
+
+        if (!base || !node) return
+
+        base.append(node)
+        const id = `id_${COMMAND_MAIN_LIST_COUNT}_command_editor`
+        EDITOR_COMMANDS.set(id, monaco.editor.create(
+            document.getElementById(id),
+            {
+                value: "",
                 language: "javascript",
                 theme: "vs-dark",
                 automaticLayout: true,
@@ -580,6 +623,28 @@ class CommandControl {
                 ? e.value = "string"
                 : e.value = ""
             )
+    }
+
+    static onMainAddCodeClick(id) {
+        const base = document.querySelector(`#root_command > .command.block[data-id="${id}"]`)
+        const node = CommandControl.getCodeNode()
+
+        if (!base || !node) return
+
+        HTMLControl.setInsertToNext(base, node)
+        EDITOR_COMMANDS.set(`id_${COMMAND_MAIN_LIST_COUNT}_command_editor`, monaco.editor.create(
+            document.getElementById(`id_${COMMAND_MAIN_LIST_COUNT}_command_editor`),
+            {
+                value: "",
+                language: "javascript",
+                theme: "vs-dark",
+                automaticLayout: true,
+            },
+        ))
+    }
+
+    static onMainClrCodeClick(id) {
+        EDITOR_COMMANDS.get(`id_${id}_command_editor`)?.setValue("")
     }
 
     // Param
@@ -999,8 +1064,7 @@ class CommandBuilder {
     static buildBlockCode(id, name, paramsName) {
         const body = EDITOR_COMMANDS.get(`id_${id}_command_editor`)?.getValue() || ""
 
-        return `
-    PluginManager.registerCommand(FILENAME, "${name}", function ({ ${paramsName} }){
+        return `    PluginManager.registerCommand(FILENAME, "${name}", function ({ ${paramsName} }){
         ${body.replaceAll("\r\n", "\r\n        ")}
     })`
     }
@@ -1015,7 +1079,11 @@ class CommandBuilder {
             : false
     }
 
-    static buildSingleBlock(block) {
+    /**
+     * @param {HTMLElement} block 
+     * @returns {{note: string, code: string}}
+     */
+    static buildSingleCommand(block) {
         const name = CommandBuilder.getCommandName(block)
         if (!name) return false
 
@@ -1044,14 +1112,43 @@ class CommandBuilder {
         }
     }
 
+    /**
+     * @param {HTMLElement} block 
+     * @returns {{note: string, code: string}}
+     */
+    static buildSingleCode(block) {
+        const id = block.dataset.id
+        if (!id || id === "") return false
+
+        const code = EDITOR_COMMANDS.get(`id_${id}_command_editor`)?.getValue().replaceAll("\n", "\n    ") || ""
+        if (code === "") return false
+
+        return {
+            note: "",
+            code: "    " + code,
+        }
+    }
+
+    /**
+     * @param {HTMLElement} block 
+     */
+    static buildSingleBlock(block) {
+        switch (block.dataset.type) {
+            case "command": return CommandBuilder.buildSingleCommand(block)
+            case "code": return CommandBuilder.buildSingleCode(block)
+
+            default: return false
+        }
+    }
+
     static build() {
-        return [...document.querySelectorAll("#root_command > div.command.block")]
+        return [...document.querySelectorAll("#root_command > div.command.block[data-type]")]
             .map(CommandBuilder.buildSingleBlock)
             .reduce((all, cur) => {
                 if (!cur) return all
 
                 all[0] += cur.note
-                all[1] += cur.code + "\n"
+                all[1] += cur.code + "\n\n"
                 return all
             }, ["", ""])
     }
@@ -1094,23 +1191,21 @@ class Builder {
         const isHadCode = commandsCode.length > 0
         const isHadParam = parameterNote.length > 0
 
-        const code = `\n(()=>{\n`
-            + (isHadCode || isHadParam ? `\n    const FILENAME = document.currentScript.src.split("/").pop().replace(".js", "")` : "")
+        const code =
+            (isHadCode || isHadParam ? `\n    const FILENAME = document.currentScript.src.split("/").pop().replace(".js", "")` : "")
             + (isHadParam ? "\n    const PARAMETERS = PluginManager.parameters(FILENAME)" : "")
-            + (isHadCode ? `\n\n    ${commandsCode}` : "")
-            + "\n\n})()"
+            + (isHadCode ? `\n\n${commandsCode}` : "")
 
-        return "/**:"
-            + [
-                BasicInfoBuilder.build(),
-                parameterNote,
-                commandsNote,
-            ]
-                .filter(Fnc.getIfNotEmpty)
-                .join("")
-            + "\n */"
-            + code
-            + "\n"
+        const note = [
+            BasicInfoBuilder.build(),
+            parameterNote,
+            commandsNote,
+        ]
+            .filter(Fnc.getIfNotEmpty)
+            .join("")
+
+        return (note === "" ? "" : "/**:" + note + "\n */\n")
+            + (code === "" ? "" : "(()=>{\n" + code + "\n})()\n")
     }
 
     static setBuildResult() {
@@ -1129,93 +1224,6 @@ class Builder {
     }
 
 }
-
-
-
-// ==============================================
-// Monaco Editor
-// ==============================================
-
-// TODO: 抄自範例，還沒看文檔
-// TS 語言驗證
-monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
-    noSemanticValidation: true,
-    noSyntaxValidation: false,
-});
-
-// TS 編譯設定
-monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
-    target: monaco.languages.typescript.ScriptTarget.ES2015,
-    allowNonTsExtensions: true,
-});
-
-const libSource = `
-      /** 檔案名稱 */
-      const FILENAME: ?string
-      /** 插件參數 */
-      const PARAMETERS: { [name: string]: ?string }
-
-      /** ［原始數據］於資料庫定義，來自 Actors.json 的可操控角色資料 */
-      var $dataActors: DataActors
-      /** ［原始數據］於資料庫定義，來自 Classes.json 的職業資料 */
-      var $dataClasses: DataClasses
-      /** ［原始數據］於資料庫定義，來自 Skills.json 的技能資料 */
-      var $dataSkills: DataSkills
-      /** ［原始數據］於資料庫定義，來自 Items.json 的道具資料 */
-      var $dataItems: DataItems
-      /** ［原始數據］於資料庫定義，來自 Weapons.json 的武器資料 */
-      var $dataWeapons: DataWeapons
-      /** ［原始數據］於資料庫定義，來自 Armors.json 的裝備資料 */
-      var $dataArmors: DataArmors
-      /** ［原始數據］於資料庫定義，來自 Enemies.json 的敵人資料 */
-      var $dataEnemies: DataEnemies
-      /** ［原始數據］於資料庫定義，來自 Troops.json 的敵人隊伍資料 */
-      var $dataTroops: DataTroops
-      /** ［原始數據］於資料庫定義，來自 States.json 的狀態資料 */
-      var $dataStates: DataStates
-      /** ［原始數據］於資料庫定義，來自 Animations.json 的動畫資料 */
-      var $dataAnimations: DataAnimations
-      /** ［原始數據］於資料庫定義，來自 Tilesets.json 的地圖圖塊資料 */
-      var $dataTilesets: DataTilesets
-      /** ［原始數據］於資料庫定義，來自 CommonEvents.json 的公共事件資料 */
-      var $dataCommonEvents: DataCommonEvents
-      /** ［原始數據］於資料庫定義，來自 System.json 的系統資料 */
-      var $dataSystem: DataSystem
-      /** ［原始數據］於資料庫定義，來自 MapInfos.json 的地圖資料 */
-      var $dataMapInfos: DataMapInfos
-
-      /** ［運行映射］遊戲運行中權宜放置的暫存資料 */
-      var $gameTemp: Game_Temp
-      /** ［運行映射］遊戲系統 */
-      var $gameSystem: Game_System
-      /** ［運行映射］遊戲畫面管理 */
-      var $gameScreen: Game_Screen
-      /** ［運行映射］計時器 */
-      var $gameTimer: Game_Timer
-      /** ［運行映射］文本視窗 */
-      var $gameMessage: Game_Message
-      /** ［運行映射］遊戲開關 */
-      var $gameSwitches: Game_Switches
-      /** ［運行映射］遊戲變數 */
-      var $gameVariables: Game_Variables
-      /** ［運行映射］事件自開關 */
-      var $gameSelfSwitches: Game_SelfSwitches
-      /** ［運行映射］ */
-      var $gameActors: Game_Actors
-      /** ［運行映射］玩家操控隊伍 */
-      var $gameParty: Game_Party
-      /** ［運行映射］戰鬥中的敵人隊伍 */
-      var $gameTroop: Game_Troop
-      /** ［運行映射］目前遊戲地圖 */
-      var $gameMap: Game_Map
-      /** ［運行映射］玩家操控角色 */
-      var $gamePlayer: Game_Player
-      
-      /** ［原始數據］若為戰鬥或事件測試時執行的測試事件 */
-      var $testEvent: DataEvent
-      `
-monaco.languages.typescript.javascriptDefaults.addExtraLib(libSource, "ts:lib/rpgmaker_source.d.ts")
-monaco.editor.createModel(libSource, "typescript", monaco.Uri.parse("ts:lib/rpgmaker_source.d.ts"))
 
 
 

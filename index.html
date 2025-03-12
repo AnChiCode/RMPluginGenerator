@@ -275,6 +275,12 @@
       gap: 4px;
     }
 
+    .tips {
+      font-size: small;
+      color: #0005;
+      display: block;
+    }
+
     @media (max-width: 1400px) {
       #build_result_button {
         left: calc(85% + 5px);
@@ -371,6 +377,7 @@
   </style>
   <!-- css -->
   <!-- js -->
+  <script src="./src/editorConfig.js"></script>
   <script src="./src/index.js"></script>
   <!-- js -->
 </head>
@@ -479,12 +486,13 @@
     </div>
     <div id="root_command" class="root">
       <div class="root_title" onclick="onRootTitleClick('comn')">
-        <span class="title">Event Command</span>
+        <span class="title">Program</span>
       </div>
 
       <div class="command block root_operation">
-        <button type="button" onclick="CommandControl.onRootAddClick()">Add</button>
-        <button type="button" onclick="CommandControl.onRootDelClick()">Del All</button>
+        <button type="button" onclick="CommandControl.onRootAddClick()">Add_Command</button>
+        <button type="button" onclick="CommandControl.onRootAddCodeClick()">Add_Code</button>
+        <button type="button" onclick="CommandControl.onRootDelClick()">Del_All</button>
       </div>
 
     </div>
@@ -494,7 +502,7 @@
       </div>
       <!-- plugin display -->
       <div id="display_plugin" class="block" style="display: block;">
-        <span style="font-size: small; color: #0005; display: block;">
+        <span class="tips">
           請注意，如果你在此編輯器內修改了任何內容，再次建立插件時將被覆蓋
         </span>
         <button type="button" id="copy_result_button" onclick="Builder.setCopyToClipBoard()">複製到剪貼簿</button>
