@@ -1227,7 +1227,7 @@ class Builder {
         const isHadMVCommand = commandMV.length > 0
 
         const code =
-            (isHadCode || isHadParam ? `\n    const FILENAME = document.currentScript.src.split("/").pop().replace(".js", "")` : "")
+            (isHadMZCommand || isHadParam ? `\n    const FILENAME = document.currentScript.src.split("/").pop().replace(".js", "")` : "")
             + (isHadParam ? "\n    const PARAMETERS = PluginManager.parameters(FILENAME)" : "")
             + (isHadCode ? `\n\n${commandsCode}` : "")
             + (isHadMVCommand ? `\n\n    if (Utils.RPGMAKER_NAME === "MV") {\n${commandMV}\n    }` : "")
