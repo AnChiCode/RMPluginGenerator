@@ -51,6 +51,7 @@
       position: fixed;
       left: calc(75% + 5px);
       top: 8px;
+      border-color: transparent;
     }
 
     button:hover,
@@ -83,6 +84,7 @@
 
       border: 1px solid #aaaeb3;
       border-bottom: none;
+      box-sizing: border-box;
     }
 
     .root_title {
@@ -115,7 +117,7 @@
     }
 
     .sub_title {
-      width: 133px;
+      width: 140px;
     }
 
     .origin_name {
@@ -362,12 +364,12 @@
     @media (max-width: 500px) {
       #build_result_button {
         left: auto;
-        right: 5px;
+        right: 8px;
         border: 1px solid #aaaeb3;
       }
 
       .root {
-        width: 95%;
+        width: calc(100% - 16px);
       }
 
       #root_meta textarea {
@@ -416,7 +418,7 @@
       <!-- url -->
       <!-- help -->
       <div class="help block">
-        <span class="help_title title">概述<span class="origin_name">(help)</span>：</span>
+        <span class="help_title title">說明<span class="origin_name">(help)</span>：</span>
         <div class="help_input data_input data">
           <input type="text" placeholder="One line of descript">
         </div>
@@ -424,7 +426,7 @@
       <!-- help -->
       <!-- desc -->
       <div class="desc block">
-        <span class="desc_title title">說明<span class="origin_name">(plugindesc)</span>：</span>
+        <span class="desc_title title">概述<span class="origin_name">(plugindesc)</span>：</span>
         <div class="desc_input data_input data">
           <textarea placeholder="Detail of this plugin"></textarea>
         </div>
@@ -480,7 +482,7 @@
 
       <div class="param block root_operation">
         <button type="button" onclick="ParameterControl.onRootAddClick()">Add</button>
-        <button type="button" onclick="ParameterControl.onRootDelClick()">Del All</button>
+        <button type="button" onclick="ParameterControl.onRootDelClick()">Del_All</button>
       </div>
 
     </div>

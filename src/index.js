@@ -875,6 +875,7 @@ class CommandControl {
 
 class BasicInfoBuilder {
 
+    /** @type {boolean} */
     static get getIsTargetMZ() { return EL_TARGET?.checked || false }
     static get getAuthor() { return Fnc.getIfNotEmpty(EL_AUTHOR?.value) }
     static get getURL() { return Fnc.getIfNotEmpty(EL_URL?.value) }
@@ -1050,7 +1051,7 @@ class CommandBuilder {
     static buildBlockParams(block) {
         return [...block.getElementsByClassName("command_parameter_group")]
             .map(ParameterBuilder.buildSingleParam)
-            .map(res => res.replaceAll("@param ", "@arg "))
+            .map(res => res?.replaceAll("@param ", "@arg "))
             .join("")
     }
 
@@ -1061,12 +1062,21 @@ class CommandBuilder {
             .join(", ")
     }
 
-    static buildBlockCode(id, name, paramsName) {
-        const body = EDITOR_COMMANDS.get(`id_${id}_command_editor`)?.getValue() || ""
+    static buildBlockCode(id, name, paramsName, isMZ) {
+        const body = EDITOR_COMMANDS.get(`id_${id}_command_editor`)?.getValue().replaceAll("\r\n", "\r\n        ") || ""
 
-        return `    PluginManager.registerCommand(FILENAME, "${name}", function ({ ${paramsName} }){
-        ${body.replaceAll("\r\n", "\r\n        ")}
-    })`
+        const mz = isMZ
+            ? `        PluginManager.registerCommand(FILENAME, "${name}", function (${paramsName.length > 0 ? `{ ${paramsName} }` : ""}){
+            ${body}
+        })`
+            : false
+
+        const mv = `
+            if(cmd === "${name}") {${paramsName.length > 0 ? `\n                var [${paramsName}] = args` : ""}
+                ${body}
+            }`
+
+        return { mz, mv }
     }
 
     /**
@@ -1081,9 +1091,10 @@ class CommandBuilder {
 
     /**
      * @param {HTMLElement} block 
-     * @returns {{note: string, code: string}}
+     * @param {boolean} isMZ 
+     * @returns {{note: string, code: false, cmdMZ: string, cmdMV: string }}}
      */
-    static buildSingleCommand(block) {
+    static buildSingleCommand(block, isMZ) {
         const name = CommandBuilder.getCommandName(block)
         if (!name) return false
 
@@ -1093,7 +1104,7 @@ class CommandBuilder {
         const params = CommandBuilder.buildBlockParams(block)
 
         const paramsName = CommandBuilder.getAllParamsName(block) // params.map(p => p.name).join(", ")
-        const code = CommandBuilder.buildBlockCode(block.dataset.id, name, paramsName)
+        const { mv, mz } = CommandBuilder.buildBlockCode(block.dataset.id, name, paramsName, isMZ)
 
         return {
             note: "\n * "
@@ -1108,7 +1119,9 @@ class CommandBuilder {
 
                     return `\n * @${n} ${v}`
                 }).join(""),
-            code
+            code: false,
+            cmdMV: mv,
+            cmdMZ: mz,
         }
     }
 
@@ -1130,27 +1143,46 @@ class CommandBuilder {
     }
 
     /**
-     * @param {HTMLElement} block 
+     * @type {(isMZ: boolean) => (block: HTMLElement) => { note: string; code: string | false; cmdMZ: ?string; cmdMV: ?string } | false}
      */
-    static buildSingleBlock(block) {
-        switch (block.dataset.type) {
-            case "command": return CommandBuilder.buildSingleCommand(block)
-            case "code": return CommandBuilder.buildSingleCode(block)
+    static buildSingleBlock(isMZ) {
+        return block => {
+            switch (block.dataset.type) {
+                case "command": return CommandBuilder.buildSingleCommand(block, isMZ)
+                case "code": return CommandBuilder.buildSingleCode(block)
 
-            default: return false
+                default: return false
+            }
         }
     }
 
+    /** @returns {[string, string, string, string,]} */
     static build() {
-        return [...document.querySelectorAll("#root_command > div.command.block[data-type]")]
-            .map(CommandBuilder.buildSingleBlock)
+        const isMZ = BasicInfoBuilder.getIsTargetMZ
+
+        let list = [...document.querySelectorAll("#root_command > div.command.block[data-type]")]
+            .map(CommandBuilder.buildSingleBlock(isMZ))
             .reduce((all, cur) => {
                 if (!cur) return all
 
                 all[0] += cur.note
-                all[1] += cur.code + "\n\n"
+                if (cur.code) all[1] += cur.code + "\n\n"
+
+                if (cur.cmdMZ) all[2] += cur.cmdMZ + "\n\n"
+                if (!cur.cmdMV) return all
+
+                all[3] += all[3] === ""
+                    ? `        const pluginCommand = Game_Interpreter.prototype.pluginCommand
+        Game_Interpreter.prototype.pluginCommand = function (cmd, args) {
+            ${cur.cmdMV}`
+                    : "\n\n        " + cur.cmdMV
+
                 return all
-            }, ["", ""])
+            }, ["", "", "", ""])
+
+        if (list[3] !== "") list[3] += "\n\n            return pluginCommand.apply(this, arguments)\n        }"
+
+        return list
     }
 }
 
@@ -1185,19 +1217,24 @@ class Builder {
     }
 
     static build() {
-        const [commandsNote, commandsCode] = CommandBuilder.build()
+        const basicNote = BasicInfoBuilder.build()
         const parameterNote = ParameterBuilder.build()
+        const [commandsNote, commandsCode, commandMZ, commandMV] = CommandBuilder.build()
 
         const isHadCode = commandsCode.length > 0
         const isHadParam = parameterNote.length > 0
+        const isHadMZCommand = commandMZ.length > 0
+        const isHadMVCommand = commandMV.length > 0
 
         const code =
             (isHadCode || isHadParam ? `\n    const FILENAME = document.currentScript.src.split("/").pop().replace(".js", "")` : "")
             + (isHadParam ? "\n    const PARAMETERS = PluginManager.parameters(FILENAME)" : "")
             + (isHadCode ? `\n\n${commandsCode}` : "")
+            + (isHadMVCommand ? `\n\n    if (Utils.RPGMAKER_NAME === "MV") {\n${commandMV}\n    }` : "")
+            + (isHadMZCommand ? `\n\n    if (Utils.RPGMAKER_NAME === "MZ") {\n${commandMZ}    }` : "")
 
         const note = [
-            BasicInfoBuilder.build(),
+            basicNote,
             parameterNote,
             commandsNote,
         ]

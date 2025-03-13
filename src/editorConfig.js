@@ -94,22 +94,37 @@ const createDependencyProposals = range => [
         insertText: "const ${1:originMethod} = ${2:Target_Class.prototype.methodName}\n" +
             "${2:Target_Class.prototype.methodName} = function (){\n" +
             "    return ${1:originMethod}.apply(this, arguments)\n" +
-            "}\n",
+            "}",
         insertTextRules:
             monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range,
     },
     {
-        label: "!command",
+        label: "!commandMZ",
         kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: "設定插件指令",
+        documentation: "設定 MZ 插件指令",
         insertText: 'PluginManager.registerCommand(FILENAME, "${1:commandName}", function ({ ${2:parameters} }) {\n' +
             "\n" +
-            "})\n",
+            "})",
         insertTextRules:
             monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range,
-    }
+    },
+    {
+        label: "!commandMV",
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: "設定 MV 插件指令",
+        insertText: "const ${1:originMethod} = Game_Interpreter.prototype.pluginCommand\n" +
+            "Game_Interpreter.prototype.pluginCommand = function (cmd, args) {\n" +
+            '    if(cmd !== "${2:commandName}") return ${1:originMethod}.apply(this, arguments)\n' +
+            "\n" +
+            "    // your process going here..." +
+            "\n" +
+            "}",
+        insertTextRules:
+            monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range,
+    },
 ]
 
 
